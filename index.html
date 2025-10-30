@@ -1,0 +1,404 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+  <title>Creative Hello, GitHub Actions!</title>
+  <meta name="color-scheme" content="dark light" />
+  <style>
+    :root {
+      --bg: #0b0f14;
+      --bg-2: #0e1420;
+      --text: #e7eef7;
+      --muted: #9fb2c8;
+      --ring: #66d9ef;
+      --chip-bg: rgba(255,255,255,0.06);
+      --chip-br: rgba(255,255,255,0.12);
+      --shadow: 0 10px 30px rgba(0,0,0,0.35);
+      --mx: 50%;
+      --my: 50%;
+    }
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f6f8fb;
+        --bg-2: #eef2f9;
+        --text: #0c1220;
+        --muted: #41556e;
+        --chip-bg: rgba(0,0,0,0.05);
+        --chip-br: rgba(0,0,0,0.08);
+        --shadow: 0 10px 30px rgba(0,0,0,0.12);
+      }
+    }
+
+    * { box-sizing: border-box; }
+    html, body { height: 100%; }
+    body {
+      margin: 0;
+      color: var(--text);
+      font: 500 16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue", Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      background:
+        radial-gradient(1000px 600px at var(--mx) var(--my), color-mix(in oklab, var(--ring) 16%, transparent) 0%, transparent 60%),
+        linear-gradient(120deg, var(--bg), var(--bg-2));
+      overflow: hidden;
+    }
+
+    /* Subtle animated sheen */
+    .sheen {
+      position: fixed;
+      inset: -20vmax;
+      background:
+        conic-gradient(from 0deg at 50% 50%,
+          rgba(255,255,255,0.06),
+          rgba(255,255,255,0.0) 12% 88%,
+          rgba(255,255,255,0.06));
+      filter: blur(40px) saturate(140%);
+      animation: spin 28s linear infinite;
+      pointer-events: none;
+      opacity: 0.8;
+    }
+    @keyframes spin { to { transform: rotate(1turn); } }
+
+    /* Floating soft blobs */
+    .blob {
+      position: fixed;
+      width: 44vmin; aspect-ratio: 1;
+      border-radius: 50%;
+      filter: blur(60px) saturate(160%);
+      opacity: 0.55;
+      mix-blend-mode: screen;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+    }
+    .blob.b1 { left: 15%; top: 22%; background: #ff7eb3; animation: float 18s ease-in-out infinite; }
+    .blob.b2 { left: 82%; top: 28%; background: #7ef7d4; animation: float 22s ease-in-out 1.5s infinite reverse; }
+    .blob.b3 { left: 35%; top: 84%; background: #7eb6ff; animation: float 26s ease-in-out 3s infinite; }
+    @keyframes float {
+      0%,100% { transform: translate(-50%, -50%) translate3d(0,0,0) scale(1); }
+      50%     { transform: translate(-50%, -50%) translate3d(0,-2vmin,0) scale(1.08); }
+    }
+
+    /* Main stage */
+    .stage {
+      position: relative;
+      min-height: 100svh;
+      display: grid;
+      place-items: center;
+      padding: clamp(16px, 3vw, 48px);
+      isolation: isolate;
+    }
+
+    .card {
+      width: min(980px, 92vw);
+      border-radius: 22px;
+      padding: clamp(28px, 5vw, 56px);
+      background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+      backdrop-filter: blur(10px) saturate(120%);
+      -webkit-backdrop-filter: blur(10px) saturate(120%);
+      border: 1px solid var(--chip-br);
+      box-shadow: var(--shadow);
+      position: relative;
+      overflow: hidden;
+    }
+    .card::before {
+      content: "";
+      position: absolute;
+      inset: -2px;
+      border-radius: 24px;
+      padding: 1px;
+      background: linear-gradient(130deg,
+        color-mix(in oklab, var(--ring) 60%, transparent),
+        transparent 30% 70%,
+        color-mix(in oklab, #ff80ab 60%, transparent));
+      -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+      -webkit-mask-composite: xor;
+              mask-composite: exclude;
+      pointer-events: none;
+      opacity: 0.4;
+    }
+
+    .eyebrow {
+      color: var(--muted);
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      font-weight: 700;
+      font-size: clamp(10px, 1.3vw, 12px);
+      display: inline-block;
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-weight: 900;
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      margin: 0;
+      font-size: clamp(42px, 10vw, 120px);
+      background: linear-gradient(90deg, #a78bfa, #22d3ee, #34d399, #f472b6, #f59e0b);
+      background-size: 200% 200%;
+      -webkit-background-clip: text;
+              background-clip: text;
+      color: transparent;
+      animation: shift 12s ease-in-out infinite;
+      position: relative;
+    }
+    @keyframes shift {
+      0%,100% { background-position: 0% 50%; }
+      50%     { background-position: 100% 50%; }
+    }
+
+    .subtitle {
+      margin: 18px 0 0;
+      font-size: clamp(14px, 2.2vw, 20px);
+      color: var(--muted);
+      max-width: 60ch;
+    }
+
+    .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 18px;
+    }
+    .chip {
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: var(--text);
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-br);
+      user-select: none;
+      cursor: pointer;
+      transition: transform .15s ease, background .2s ease, border-color .2s ease;
+    }
+    .chip:hover {
+      transform: translateY(-1px);
+      border-color: color-mix(in oklab, var(--ring) 60%, var(--chip-br));
+      background: color-mix(in oklab, var(--ring) 10%, var(--chip-bg));
+    }
+    .chip:active { transform: translateY(0); }
+
+    .cursor {
+      display: inline-block;
+      width: 0.6ch;
+      margin-left: 1px;
+      background: currentColor;
+      height: 1em;
+      transform: translateY(0.1em);
+      animation: blink 1s step-end infinite;
+      opacity: 0.7;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    /* Confetti particles */
+    .confetti {
+      position: fixed;
+      inset: 0;
+      overflow: hidden;
+      pointer-events: none;
+      z-index: 2;
+    }
+    .piece {
+      position: fixed;
+      top: -1.2em;
+      width: var(--w, 8px);
+      height: var(--h, 12px);
+      background: var(--c, #fff);
+      border-radius: 2px;
+      transform: translateY(-120%) rotate(var(--r, 0deg));
+      opacity: 0.9;
+      will-change: transform, opacity;
+      animation: fall var(--dur, 2000ms) cubic-bezier(.2,.7,.2,1) var(--delay, 0ms) forwards;
+    }
+    @keyframes fall {
+      to {
+        transform:
+          translateY(calc(100vh + 10vh))
+          rotate(calc(var(--r, 0deg) + 1turn));
+        opacity: 0.95;
+      }
+    }
+
+    /* Respect reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .sheen, .blob, h1 { animation: none !important; }
+      .piece { animation-duration: 1ms; }
+      .cursor { animation: none; }
+    }
+
+    footer {
+      position: fixed;
+      left: 50%;
+      bottom: 14px;
+      transform: translateX(-50%);
+      color: var(--muted);
+      font-size: 12px;
+      opacity: 0.9;
+      user-select: none;
+      text-align: center;
+      padding: 4px 8px;
+      border-radius: 8px;
+      background: var(--chip-bg);
+      border: 1px solid var(--chip-br);
+      backdrop-filter: blur(6px);
+    }
+  </style>
+</head>
+<body>
+  <div class="sheen" aria-hidden="true"></div>
+  <div class="blob b1" aria-hidden="true"></div>
+  <div class="blob b2" aria-hidden="true"></div>
+  <div class="blob b3" aria-hidden="true"></div>
+
+  <main class="stage">
+    <section class="card" role="region" aria-label="Hello, GitHub Actions Card">
+      <div class="eyebrow">A tiny creative moment</div>
+      <h1 id="headline" aria-live="polite" aria-atomic="true"></h1>
+      <p class="subtitle">
+        This single page says hello with a splash of color, soft motion, and a sprinkle of confetti.
+        Click a chip, move your mouse, or press a key to make it festive.
+      </p>
+      <div class="chips" aria-label="Quick actions">
+        <button class="chip" id="btn-celebrate" type="button">Celebrate 🎉</button>
+        <button class="chip" id="btn-type" type="button">Replay typing ⌨️</button>
+        <button class="chip" id="btn-cycle" type="button">Cycle colors 🌈</button>
+      </div>
+    </section>
+    <div class="confetti" id="confetti" aria-hidden="true"></div>
+  </main>
+
+  <footer>Made with plain HTML, CSS, and JavaScript.</footer>
+
+  <script>
+    // Cursor-driven background light follows the pointer
+    document.addEventListener('pointermove', (e) => {
+      const x = (e.clientX / innerWidth) * 100;
+      const y = (e.clientY / innerHeight) * 100;
+      document.documentElement.style.setProperty('--mx', x.toFixed(2) + '%');
+      document.documentElement.style.setProperty('--my', y.toFixed(2) + '%');
+    }, { passive: true });
+
+    // Typewriter effect
+    const headline = document.getElementById('headline');
+    const fullText = 'Hello, GitHub Actions!'; // <-- Updated text
+    let typingTimer;
+    let typingInterval = 55; // ms per char
+
+    function typeText(el, text, speed = 55) {
+      clearInterval(typingTimer);
+      el.innerHTML = '';
+      let i = 0;
+      const cursor = document.createElement('span');
+      cursor.className = 'cursor';
+      el.append(cursor);
+
+      typingTimer = setInterval(() => {
+        if (i < text.length) {
+          cursor.before(document.createTextNode(text[i++]));
+        } else {
+          clearInterval(typingTimer);
+          cursor.remove();
+        }
+      }, speed);
+    }
+
+    // Start typing on load
+    window.addEventListener('DOMContentLoaded', () => {
+      typeText(headline, fullText, typingInterval);
+    });
+
+    // Buttons
+    document.getElementById('btn-type').addEventListener('click', () => {
+      typeText(headline, fullText, Math.max(20, typingInterval - 8));
+    });
+
+    // Confetti burst
+    function hexToHsl(hex) {
+      hex = hex.replace('#','');
+      if (hex.length === 3) hex = hex.split('').map(c=>c+c).join('');
+      const num = parseInt(hex, 16);
+      const r = (num >> 16) / 255;
+      const g = ((num >> 8) & 255) / 255;
+      const b = (num & 255) / 255;
+      const max = Math.max(r,g,b), min = Math.min(r,g,b);
+      let h, s, l = (max + min) / 2;
+      if (max === min) { h = s = 0; }
+      else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch(max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return { h: Math.round(h*360), s: Math.round(s*100), l: Math.round(l*100) };
+    }
+    function hslToCss({h,s,l}) { return `hsl(${h} ${s}% ${l}%)`; }
+    function shiftHue(hsl, delta) { return { h: (hsl.h + delta) % 360, s: hsl.s, l: hsl.l }; }
+
+    function celebrate() {
+      const layer = document.getElementById('confetti');
+      const base = hexToHsl('#22d3ee');
+      const count = 96;
+
+      for (let i = 0; i < count; i++) {
+        const p = document.createElement('span');
+        p.className = 'piece';
+        const left = Math.random() * 100;
+        const delay = Math.random() * 220;
+        const dur = 1400 + Math.random() * 1400;
+        const w = 6 + Math.random() * 8;
+        const h = 10 + Math.random() * 10;
+        const rot = (Math.random() * 360).toFixed(0) + 'deg';
+        const hueShift = (Math.random() * 360) | 0;
+        const color = hslToCss(shiftHue(base, hueShift));
+
+        p.style.left = left + 'vw';
+        p.style.setProperty('--c', color);
+        p.style.setProperty('--w', w + 'px');
+        p.style.setProperty('--h', h + 'px');
+        p.style.setProperty('--r', rot);
+        p.style.setProperty('--delay', delay + 'ms');
+        p.style.setProperty('--dur', dur + 'ms');
+
+        layer.appendChild(p);
+        // Cleanup after animation
+        setTimeout(() => p.remove(), dur + delay + 100);
+      }
+    }
+    document.getElementById('btn-celebrate').addEventListener('click', celebrate);
+
+    // Cycle colors: rotate gradient stops for .card::before glow
+    let hueBase = 200;
+    function cycleColors() {
+      hueBase = (hueBase + 24) % 360;
+      const g1 = `hsl(${hueBase} 90% 65%)`;
+      const g2 = `hsl(${(hueBase+120)%360} 85% 60%)`;
+      const g3 = `hsl(${(hueBase+240)%360} 85% 60%)`;
+      document.querySelector('.card').style.setProperty('--ring', g1);
+      // also shift blob hues slightly for cohesion
+      document.querySelector('.blob.b1').style.background = `hsl(${(hueBase+300)%360} 90% 65%)`;
+      document.querySelector('.blob.b2').style.background = `hsl(${(hueBase+60)%360} 80% 65%)`;
+      document.querySelector('.blob.b3').style.background = `hsl(${(hueBase+180)%360} 85% 65%)`;
+      // re-animate headline
+      typeText(headline, fullText, typingInterval);
+    }
+    document.getElementById('btn-cycle').addEventListener('click', cycleColors);
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.key === ' ') { e.preventDefault(); celebrate(); }
+      if (e.key.toLowerCase() === 'c') { cycleColors(); }
+      if (e.key.toLowerCase() === 'r') { typeText(headline, fullText, typingInterval); }
+    });
+
+    // Fun: auto celebrate on first interaction
+    let first = false;
+    const autoOnce = () => { if (!first) { first = true; celebrate(); } };
+    addEventListener('pointerdown', autoOnce, { once: true });
+    addEventListener('keydown', autoOnce, { once: true });
+  </script>
+</body>
+</html>
