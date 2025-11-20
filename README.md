@@ -18,7 +18,7 @@ This project automatically deploys changes to `index.html` to GitHub Pages whene
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/<username>/gh-deployment-workflow.git
+   git clone https://github.com/TiPOMeOW725/gh-deployment-workflow
    cd gh-deployment-workflow
    ```
 
@@ -54,5 +54,5 @@ The GitHub Actions workflow (`.github/workflows/deploy.yml`) automatically:
 
 ## Live Demo
 
-Visit the deployed website at: `https://<username>.github.io/gh-deployment-workflow/`
+Visit the deployed website at: `https://tipomeow725.github.io/gh-deployment-workflow/`
 
